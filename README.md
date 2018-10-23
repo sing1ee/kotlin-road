@@ -2,7 +2,7 @@
 
 一篇小文，说说kotlin带来方便的一些特性。
 
-####  IntelliJ IDEA对Kotlin的支持
+####   IntelliJ IDEA对Kotlin的支持
 
 同一个团队的产品，所以在kotlin一出生就有完美的IDE支持。对于Java程序员要学习Kotlin，开始部分语法会遇到难题，用IDE有两个小trick：
 
@@ -11,11 +11,11 @@
 
 但，这样的功能用得越少，学习Kotlin也就越快。
 
-####  var和val
+####   var和val
 
 老生长谈了，var是可变的，val不可变，并发安全。建议val变量在定义之初就要初始化。
 
-####  表达式函数体
+####   表达式函数体
 
 定义一个函数，可以有更简单的形式，注意是函数体只有一个语句的情况。
 
@@ -29,7 +29,7 @@ fun max(a: Int, b: Int): Int = if (a > b) a else b
 ```
 对于上面的特性，NTELLIJ IDEA也有提示，可以通过工具转换。
 
-#### 类型推导
+####  类型推导
 Kotlin强类型的语言，但有些场景类型可以省略，由编译器进行推断。
 
 ```java
@@ -39,7 +39,7 @@ val a = SomeClass()
 fun max(a: Int, b: Int) = if (a > b) a else b
 ```
 
-#### 类型智能转换
+####  类型智能转换
 最喜欢的功能之一。还记得Java里类型转换的括号嘛，我们看看Kotlin的做法
 
 ```java
@@ -65,7 +65,7 @@ val x: String = y as String
 val x: String = y as? String
 ```
 
-#### 快速的创建数组
+####  快速的创建数组
 对比Java，会有一些方便
 
 ```java
@@ -73,7 +73,7 @@ val a: Array<Int> = arrayOf(1,2,3)
 val b:Array<Int> = Array(3,{k -> k*k})
 ```
 
-#### import重命名
+####  import重命名
 算是一个特性，我们实践中很少能够用到了。
 
 ```java
@@ -87,7 +87,7 @@ class Hello {
 }
 ```
 
-#### range区间
+####  range区间
 方便的语法糖，记住类型就好
 
 ```java
@@ -97,7 +97,7 @@ val range：IntRange = 1 .. 5
 val range : IntRange = 1 until 5
 ```
 
-#### 控制流表达式
+####  控制流表达式
 与Java不同，if .. elas / try ..catch在Kotlin都是表达式，可以出现在等号的右边。
 
 ```java
@@ -117,7 +117,7 @@ fun testIfReturn(a: Int, b: Int) {
 }
 ```
 
-#### 代理（by）
+####  代理（by）
 代理模式提供一种实现集成的替代方法，Kotlin原生就支持。
 
 ```java
@@ -189,7 +189,7 @@ fun main(args: Array<String>) {
 // first -> second
 ```
 
-#### sealed class
+####  sealed class
 密封类用来表示受限的类继承结构：当一个值为有限集中的类型、而不能有任何其他类型时。在某种意义上，他们是枚举类的扩展：枚举类型的值集合也是受限的，但每个枚举常量只存在一个实例，而密封类的一个子类可以有可包含状态的多个实例。 
 
 ```java
@@ -209,14 +209,14 @@ fun eval(expr: Expr): Double = when(expr) {
 }
 ```
 
-#### 函数扩展
+####  函数扩展
 无需多说，之前写Go的时候，就羡慕了一把，JVM也可以了。
 
 ```java
 fun Int.
 ```
 
-#### 高阶函数
+####  高阶函数
 高阶函数是将函数用作参数或返回值的函数。
 
 ```java
@@ -251,7 +251,7 @@ val joinedToString = items.fold("Elements:", { acc, i -> acc + " " + i })
 val product = items.fold(1, Int::times)
 ```
 
-#### 带有接收者的函数字面值
+####  带有接收者的函数字面值
 带有接受者的函数类型，就是这样：
 
 ```java
@@ -314,7 +314,7 @@ html {
 ```
 完整示例可见于Kotlin官方文档。
 
-#### 函数扩展
+####  函数扩展
 之前使用Go开发的时候，着实羡慕了一把，不过现在Kotlin也可以了，话不多说
 
 ```java
@@ -350,7 +350,7 @@ operator inline fun Int.rem(blk: () -> Unit) {
 20 % { print ("你有20%的概率看到这条信息") }
 ```
 
-#### 中缀表示法
+####  中缀表示法
 
 infix关键字，标识中缀函数：
 
@@ -368,7 +368,7 @@ infix fun Int.shl(x: Int): Int { …… }
 1.shl(2)
 ```
 
-#### 可变数量的参数（Varargs）
+####  可变数量的参数（Varargs）
 函数的参数（通常是最后一个）可以用 vararg 修饰符标记，这里也可以用伸展（spread）操作符（在数组前面加 *）：
 
 ```java
@@ -383,10 +383,10 @@ val a = arrayOf(1, 2, 3)
 val list = asList(-1, 0, *a, 4)
 ```
 
-#### use函数
+####  use函数
 实现了Closeable接口的对象可调用use函数，自动close。不举例了。
 
-#### with、let、also、run and apply
+####  with、let、also、run and apply
 用一张图和一段代码说明：
 
 ![](1_pLNnrvgvmG6Mdi0Yw3mdPQ.png)
@@ -455,14 +455,14 @@ fun main(args: Array<String>) {
 }
 ```
 
-#### typealias
+####  typealias
 
 ```java
 typealias Cache = HasmMap<String, Int>
 ```
 
 
-#### Java调用Kotlin属性
+####  Java调用Kotlin属性
 
 ```java
 // kotlin
@@ -473,7 +473,7 @@ someone.setA(2)
 someone.getA() // 2
 ```
 
-#### Java调用Kotlin方法
+####  Java调用Kotlin方法
 
 ```java
 // Counter.kt
@@ -493,7 +493,7 @@ fun count() = 42
 int size = Counter.count()
 ```
 
-#### Java调用Kotlin静态方法
+####  Java调用Kotlin静态方法
 
 ```java
 // Kotlin
@@ -516,7 +516,7 @@ companion object {
 // Java class
 int size = Counter.count()
 ```
-#### Java调用Kotlin构造函数
+####  Java调用Kotlin构造函数
 
 ```java
 // Kotlin
@@ -532,6 +532,5 @@ class Person @JvmOverloads constructor (
 // Java
 Person person = new Person("Lorenzo");  // ok
 ```
-
 
 
