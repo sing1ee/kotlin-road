@@ -1,311 +1,525 @@
-# 非典型EOS开发入门
+# Kotlin tips and tricks
 
-#### 非典型
-EOS上线稳定运行一段时间了，最近也是成为众多博彩的DAPP首选公链。但我们这篇文章不讲区块链，也不讲去中心化，也不讲币，只从技术的角度，从使用一个类似SDK的工具的角度，来一个入门之旅。毕竟EOS蛮成熟了。
+一篇小文，说说kotlin带来方便的一些特性。
 
-> 注：以下操作都在`Mac`上进行
+#### IntelliJ IDEA对Kotlin的支持
+同一个团队的产品，所以在kotlin一出生就有完美的IDE支持。对于Java程序员要学习Kotlin，开始部分语法会遇到难题，用IDE有两个小trick：
 
-#### 安装
+- 直接复制Java代码到Kotlin文件中，可以直接转变为Kotlin代码，然后学习。
+- 也可以通过菜单中的工具，将整个Java类转变为Kotlin代码。
 
-安装方法有比较简单，和半年前不可同日而语，那时候编译通过也是比较困难的事情。
-首先通过`brew`安装。
+但，这样的功能用得越少，学习Kotlin也就越快。
 
-```cpp
-// install
-brew tap eosio/eosio
-brew install eosio
-// uninstall
-brew remove eosio
+#### var和val
+老生长谈了，var是可变的，val不可变，并发安全。建议val变量在定义之初就要初始化。
+
+#### 表达式函数体
+定义一个函数，可以有更简单的形式，注意是函数体只有一个语句的情况。
+
+```java
+// 一般形式
+fun max(a: Int, b: Int): Int { 
+    return if (a > b) a else b 
+}
+// 表达式函数体
+fun max(a: Int, b: Int): Int = if (a > b) a else b
+```
+对于上面的特性，NTELLIJ IDEA也有提示，可以通过工具转换。
+
+#### 类型推导
+Kotlin强类型的语言，但有些场景类型可以省略，由编译器进行推断。
+
+```java
+// 类型推断
+val a = SomeClass()
+// 上面的函数可以重新定义
+fun max(a: Int, b: Int) = if (a > b) a else b
 ```
 
-安装这里，用`brew`是一种快捷的方法，但是对学习无益。而且，对于`brew`的安装，似乎安装的不完整，我没有找到`eosiocpp`等命令。从源码`build`，是有的。过程略复杂，依赖比较多，需要配置一些环境变量，大家有问题可以留言讨论，Github里提一个`issue`，也OK。
+#### 类型智能转换
+最喜欢的功能之一。还记得Java里类型转换的括号嘛，我们看看Kotlin的做法
 
-#### 命令解析与基本操作
-
-EOS安装完毕主要有三个命令：
-
-- `nodeos`是节点程序，一系列可配置的插件，包括生产区块的功能，下文有介绍，可以用来作为本地的开发测试环境
-- `cleos`负责和区块链以及钱包，进行命令行方式的交互
-- `keosd`用来安全的存储钱包中的keys
-
-三者之间的关系如下：
-![582e059-411_DevRelations_NodeosGraphic_Option3](582e059-411_DevRelations_NodeosGraphic_Option3.png)
-
-#### 单节点测试网络
-
-本地开发需要一个环境，在安装好eos的基础之上，我们运行单节点的测试网络。
-
-运行如下命令：
-
-```cpp
-nodeos -e -p eosio --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin
-```
-很快就会有区块产生，大部分的交易数都是0：
-
-```cpp
-info  2018-10-25T13:38:25.505 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 0000a44aaf490a1d... #42058 @ 2018-10-25T13:38:25.500 signed by eosio [trxs: 0, lib: 42057, confirmed: 0]
-info  2018-10-25T13:38:26.003 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 0000a44b95765523... #42059 @ 2018-10-25T13:38:26.000 signed by eosio [trxs: 0, lib: 42058, confirmed: 0]
-info  2018-10-25T13:38:26.502 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 0000a44c3473bb8f... #42060 @ 2018-10-25T13:38:26.500 signed by eosio [trxs: 0, lib: 42059, confirmed: 0]
-info  2018-10-25T13:38:27.000 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 0000a44de15a88ef... #42061 @ 2018-10-25T13:38:27.000 signed by eosio [trxs: 0, lib: 42060, confirmed: 0]
-info  2018-10-25T13:38:27.504 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 0000a44e31032a7f... #42062 @ 2018-10-25T13:38:27.500 signed by eosio [trxs: 0, lib: 42061, confirmed: 0]
-```
-如上输出，则意味着节点启动成功，运行着一个叫做`eosio`的区块生产者。下图展示的是这个单节点是如何工作的。
-
-
-![60539b3-Single-Host-Single-Node-Testnet](60539b3-Single-Host-Single-Node-Testnet.png)
-
-启动之后，默认的配置文件存放位置为：
-
-1. Mac
-
-	```cpp
-	~/Library/Application\ Support/eosio/nodeos/config
-	```
-2. Linux
-	
-	```cpp
-	~/.local/share/eosio/nodeos/config
-	```
-同时，我们也可以使用`--config-dir`，在命令行执行配置目录，但要注意，当通过命令行制定，需要将`genesis.json`文件放到自定义的配置目录中。
-
-同样，也可以制定数据目录，如下:
-
-1. Mac
-
-	```cpp
-	~/Library/Application\ Support/eosio/nodeos/data
-	```
-2. Linux
-	
-	```cpp
-	~/.local/share/eosio/nodeos/data
-	```
-也可以通过命令行来指定，参数为：`--data-dir`。
-
-以上，节点启动成功，可以通过如下的命令检查：
-
-```cpp
-curl --request POST --url http://127.0.0.1:8888/v1/chain/get_info | python -m json.tool
-```
-输出为：
-
-```cpp
-{
-    "block_cpu_limit": 199900,
-    "block_net_limit": 1048576,
-    "chain_id": "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f",
-    "head_block_id": "0000a82fa75500a7d2bc8be4d45c108c4e503600367259f349a54699c08eb2d0",
-    "head_block_num": 43055,
-    "head_block_producer": "eosio",
-    "head_block_time": "2018-10-25T13:46:44.000",
-    "last_irreversible_block_id": "0000a82e536d530d8d7e8912ff996bc42ee7dd1d3f8b5e13bfa2a1773d52bef5",
-    "last_irreversible_block_num": 43054,
-    "server_version": "f9a3d023",
-    "server_version_string": "v1.4.1-dirty",
-    "virtual_block_cpu_limit": 200000000,
-    "virtual_block_net_limit": 1048576000
+```java
+// obj不需要像Java一样强制转换，!is也是一样
+if (obj is String) {
+    print(obj.length)
+}
+// 当然，这个也可以
+if (obj !is String || obj.length == 0) return
+// 还有强大的when
+when (x) {
+    is Int -> print(x + 1)
+    is String -> print(x.length + 1)
+    is IntArray -> print(x.sum())
 }
 ```
-上面清晰的可以看到节点配置的详情信息，如`server_version_string`。更多的API可以查看官方的文档。
+除此之外，Kotlin也支持强制类型的转换，as和as
 
-#### 为智能合约准备
-
-在EOS上，智能合约采用的是`WebAssembly`格式代码，可由C++, Rust, Python, Kotlin等编写编译生成，但目前C++的支持很完善。在使用C++编写完成合约代码后，通过EOSIO软件中提供的eosiocpp工具，将C++代码编译生成WASM（wasm的文本格式是后缀是wast，下文可以看到）文件和abi文件，再利用cleos工具将代码部署到链上，也就是存到块数据中。
-
-特别说明几个概念：
-
-- `abi` 应用程序二进制接口（ABI）是一个基于JSON的描述，介绍如何在JSON和二进制表示之间转换用户操作。ABI还描述了如何将数据库状态转换为JSON或从JSON转换。文件格式类似JSON，用来定义智能合约与EOS系统外部交互的数据接口。将cpp编译为abi：
-
-	```cpp
-	eosiocpp -g ${contract}.abi ${contract}.hpp
-	```
-- `wast` 任何要部署到EOSIO区块链的程序都必须编译成WASM格式。这是区块链接受的唯一格式。`.wast`是`.wasm`的文本格式；将cpp编译为WASM：
-
-	```cpp
-	eosiocpp -o ${contract}.wast ${contract}.cpp
-	```
-
-智能合约名即账号名，在上述部署合约（下面Hello EOS会介绍如何部署和测试）时就已经绑定了账号。在满足条件或被调用时，超级节点就会执行相关合约，并将执行结果的数据更新到内存数据库中，同时也会更新到块数据中。
-
-与以太坊简单对比：
-
-1. 合约名称与合约地址的差异：以太坊合约通过地址区分，EOS的合约名就是账号名。
-2. 合约更新的差异。如果以太坊合约要更新，就是一个新的地址，所以以太坊才是真正的`智能合约`，EOS是通过账户名区分，智能合约和普通的应用类型一样，可以更新。所以这个点上，`EOS更多的是给应用提供了可靠遍历的支付方式`。我想这一点很重要。
-3. 资源消耗，以太坊消耗GAS，每个操作都有手续费。EOS智能合约不需要手续费，但部署合约需要RAM，发送消息和执行合约需要消耗抵押获得的CPU和网络带宽。
-
-接下来就动手，来一个Hello World。
-
-#### Hello EOS
-
-开始编写EOS智能合约，EOS智能合约是采用C++语言编写，是项目方综合考虑安全和效率。
-
-编写智能合约可以通过命令生成模板：
-
-```cpp
-$ eosiocpp -n hello
-```
-当然，现阶段可以直接copy如下的代码：
-
-```cpp
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-using namespace eosio;
-
-class hello : public eosio::contract {
-  public:
-      using contract::contract;
-      /// @abi action 
-      void hi( account_name user ) {
-         print( "Hello, World", name{user} );
-      }
-};
-EOSIO_ABI( hello, (hi) )
-```
-简单说明一下代码：
-
-```cpp
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-```
-引入EOS智能合约的头文件。
-
-```cpp
-using namespace eosio;
-```
-使用默认的命名空间，可以自定义。
-
-```cpp
-class hello：public eosio :: contract {
-```
-EOS中，智能合约都要继承`eosio :: contract`。
-
-
-编译EOS智能合约
-
-```cpp
-eosiocpp -o hello.wast hello.cpp
-eosiocpp -g hello.abi hello.cpp
+```java
+// 非安全转换，会抛出异常，如果y为null
+val x: String = y as String
+// 安全转换，如果y为null，直接返回null
+val x: String = y as? String
 ```
 
-部署合约需要创建测试用的钱包、密钥和账户。
+#### 快速的创建数组
+对比Java，会有一些方便
 
-EOS安装启动之后，默认有一个default钱包，我们也可以通过如下命令创建
-
-```cpp
-cleos wallet create -n <钱包名字>
-```
-创建钱包的同时，会生成一个密码，请妥善保存，在对钱包进行一些操作的时候，需要这个密码，例如解锁钱包。我们的演示里，直接使用default钱包。
-
-在以下的过程中，如果提示钱包已经锁定，则执行解锁的命令：
-
-```cpp
-cleos wallet unlock -n default
-```
-解锁名字为`default`的钱包
-
-接下来用`cleos`创建一个密钥对：
-
-```cpp
-cleos create key
-```
-保存好private key和public key，后面创建账号的时候，需要用。
-
-在创建账号之前，需要将密钥导入到钱包中：
-
-```cpp
-cleos wallet import -n scuser --private-key <your_private_key>
+```java
+val a: Array<Int> = arrayOf(1,2,3)
+val b:Array<Int> = Array(3,{k -> k*k})
 ```
 
-我们需要两个密钥对，重复上面的两个步骤，再生成一个密钥对，然后导入钱包。
+#### import重命名
+算是一个特性，我们实践中很少能够用到了。
 
-此时通过如下命令：
+```java
+// 神奇，会优先使用import进来的
+import Base as Hello
 
-```cpp
-cleos wallet keys
-```
-可以看到刚导入的两个密钥对，展示的是public key：
-
-```cpp
-[
-  "EOS62d7M3N7ZkY5gMFhGKygenKNnrAtuGrvjkv9ap3Py1seLo9DYh",
-  "EOS8B2wVFnPk1TNTVLjdKgtiLMtv8r8KdHKWj3U7zciUvMyo36bnT"
-]
-```
-大家这里看到的具体的public key，与我不同。
-
-下面要创建账号，命令如下：
-
-```cpp
-$ cleos create account eosio myuser EOS8B2wVFnPk1TNTVLjdKgtiLMtv8r8KdHKWj3U7zciUvMyo36bnT EOS62d7M3N7ZkY5gMFhGKygenKNnrAtuGrvjkv9ap3Py1seLo9DYh
-Error 3090003: Provided keys, permissions, and delays do not satisfy declared authorizations
-Ensure that you have the related private keys inside your wallet and your wallet is unlocked.
-```
-出现问题，按照如下方法解决：
-
-1. 打开配置文件
-	1. Mac
-
-		```cpp
-		~/Library/Application\ Support/eosio/nodeos/config
-		```
-	2. Linux
-	
-		```cpp
-		~/.local/share/eosio/nodeos/config
-		```
-2. 找到signature-provider的私钥
-3. 将私钥导入到钱包中
-
-再次尝试成功，结果如下
-
-```cpp
-executed transaction: 199fcf44e40602dff76d8231b5f11129f0fda9c15fef3b684ef4149e032bab79  200 bytes  904 us
-#         eosio <= eosio::newaccount            {"creator":"eosio","name":"myuser","owner":{"threshold":1,"keys":[{"key":"EOS8B2wVFnPk1TNTVLjdKgtiLM...
+class Hello {
+	fun hello() {
+		println("hello world")
+	}
+}
 ```
 
-这时执行`cleos wallet keys`，就会发现，多了一个public key：
+#### range区间
+方便的语法糖，记住类型就好
 
-```cpp
-[
-  "EOS62d7M3N7ZkY5gMFhGKygenKNnrAtuGrvjkv9ap3Py1seLo9DYh",
-  "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV",
-  "EOS8B2wVFnPk1TNTVLjdKgtiLMtv8r8KdHKWj3U7zciUvMyo36bnT"
-]
+```java
+// 闭区间
+val range：IntRange = 1 .. 5
+// 左闭右开
+val range : IntRange = 1 until 5
 ```
 
-智能合约成功发布到本地测试网络
+#### 控制流表达式
+与Java不同，if .. elas / try ..catch在Kotlin都是表达式，可以出现在等号的右边。
 
-```cpp
-$ cleos set contract myuser ~/Code/eos-sc/hello
-```
-结果如下：
-
-```cpp
-Reading WASM from /Users/zhangcheng/Code/eos-sc/hello/hello.wasm...
-Publishing contract...
-executed transaction: 9cb1a47cd1bfe749d0b4ab4f2e15c778f798aead1103962f4e230da8f1b83f19  1808 bytes  1701 us
-#         eosio <= eosio::setcode               {"account":"myuser","vmtype":0,"vmversion":0,"code":"0061736d01000000013b0c60027f7e006000017e60027e7...
-#         eosio <= eosio::setabi                {"account":"myuser","abi":"0e656f73696f3a3a6162692f312e30000102686900010475736572046e616d65010000000...
-```
-
-接下来调用合约，通过`push action`命令来执行合约方法`hi`:
-
-```cpp
-$ cleos push action myuser hi '["world"]' -p myuser
-```
-结果如下：
-
-```cpp
-executed transaction: a3781e50591348427eb61dd2d129d1a976977f67421da791f4a3cff6923d433c  104 bytes  588 us
-#        myuser <= myuser::hi                   {"user":"world"}
+```java
+val max = if (a > b) a else b
+// 还有一个相关的小特性，顺便说说
+fun testIfReturn(a: Int, b: Int) {
+    
+    val max = if (a > b) {
+        print("Max a")
+        a // 代码块最后一行表达式的值就是 max 的值
+    } else {
+        print("Max b")
+        b
+    }
+    // 字符串插值，以前写Java羡慕了很久Perl
+    println("max = $max") 
+}
 ```
 
-此时，`nodeos`的日志也发生了相应的变化，明确显示有一个交易。
+#### 代理（by）
+代理模式提供一种实现集成的替代方法，Kotlin原生就支持。
 
-```cpp
-info  2018-10-25T09:58:27.005 thread-0  producer_plugin.cpp:1490      produce_block        ] Produced block 00003d2df2f11915... #15661 @ 2018-10-25T09:58:27.000 signed by eosio [trxs: 1, lib: 15660, confirmed: 0]
+```java
+// 代理类
+interface Base {
+  fun print()
+}
+class BaseImpl(val x: Int) : Base {
+  override fun print() { print(x) }
+}
+ 
+class Derived(b: Base) : Base by b
+ 
+fun main(args: Array<String>) {
+  val b = BaseImpl(10)
+  Derived(b).print()  // prints 10
+}
+// 代理属性
+// 1. 延迟属性：第一次真正访问的时候，初始化
+// 2. 观察属性：属性发生改变，通知监听者
+// 3. Map中存储属性，有趣
+class Example {
+  var p: String by Delegate()
+}
+class Delegate {
+  operator fun getValue(thisRef: Any?, property: KProperty<*>): String {
+    return "$thisRef, delegating '${property.name}' to me!"
+  } 
+  operator fun setValue(thisRef: Any?, property: KProperty<*>, value: String) {
+    println("$value assigned to '${property.name} in $thisRef.'")
+  }
+}
+// 读取p值
+val e = Example()
+println(e.p)  //Example@33a17727, delegating ‘p’ to me!
+// 设置p值
+e.p = "NEW"
+// 打印结果：
+// NEW assigned to ‘p’ in Example@33a17727.
+// Lazy简单用法
+val lazyValue: String by lazy {
+    println("computed!")
+    "Hello"
+}
+ 
+fun main(args: Array<String>) {
+    println(lazyValue)
+    println(lazyValue)
+}
+// prints：
+// computed!
+// Hello
+// Hello
+
+// 可观察方法简单用法，这个在业务系统中，可以有不错的尝试
+class User {
+    var name: String by Delegates.observable("<nomalName>") {
+        prop, old, new ->
+        println("$old -> $new")
+    }
+} 
+fun main(args: Array<String>) {
+    val user = User()
+    user.name = "first"
+    user.name = "second"
+}
+// 结果：
+// < nomalName > -> first
+// first -> second
 ```
 
-至此，EOS的Hello World就结束了。
+#### sealed class
+密封类用来表示受限的类继承结构：当一个值为有限集中的类型、而不能有任何其他类型时。在某种意义上，他们是枚举类的扩展：枚举类型的值集合也是受限的，但每个枚举常量只存在一个实例，而密封类的一个子类可以有可包含状态的多个实例。 
 
-下一步，来一个高级点的应用，我们在EOS上发个币吧。
+```java
+// Kotlin 1.1+，否则子类必须在sealed class内部
+sealed class Expr
+data class Const(val number: Double) : Expr()
+data class Sum(val e1: Expr, val e2: Expr) : Expr()
+object NotANumber : Expr()
+
+// 作用1 保护代码，感受不深
+// 作用2 when可以没有else了
+fun eval(expr: Expr): Double = when(expr) {
+    is Const -> expr.number
+    is Sum -> eval(expr.e1) + eval(expr.e2)
+    NotANumber -> Double.NaN
+    // 不再需要 `else` 子句，因为我们已经覆盖了所有的情况
+}
+```
+
+#### 高阶函数
+高阶函数是将函数用作参数或返回值的函数。
+
+```java
+fun <T, R> Collection<T>.fold(
+    initial: R, 
+    combine: (acc: R, nextElement: T) -> R
+): R {
+    var accumulator: R = initial
+    for (element: T in this) {
+        accumulator = combine(accumulator, element)
+    }
+    return accumulator
+}
+// 具体使用示例
+val items = listOf(1, 2, 3, 4, 5)
+
+// Lambdas 表达式是花括号括起来的代码块。
+items.fold(0, { 
+    // 如果一个 lambda 表达式有参数，前面是参数，后跟“->”
+    acc: Int, i: Int -> 
+        print("acc = $acc, i = $i, ") 
+    val result = acc + i
+    println("result = $result")
+    // lambda 表达式中的最后一个表达式是返回值：
+    result
+})
+
+// lambda 表达式的参数类型是可选的，如果能够推断出来的话：
+val joinedToString = items.fold("Elements:", { acc, i -> acc + " " + i })
+
+// 函数引用也可以用于高阶函数调用：
+val product = items.fold(1, Int::times)
+```
+
+#### 带有接收者的函数字面值
+带有接受者的函数类型，就是这样：
+
+```java
+A.(B) -> C
+```
+我第一次看到是懵的，但给一个例子，就好多了。
+
+```java
+val sum = fun Int.(other: Int): Int = this + other
+println(sum(5 + 6))  // 11
+```
+是不是还没有透彻，来一个完整的，很强大，可以尽情玩耍。
+
+```java
+class HTML {
+    fun body() { …… }
+}
+
+fun html(init: HTML.() -> Unit): HTML {
+    val html = HTML()  // 创建接收者对象
+    html.init()        // 将该接收者对象传给该 lambda
+    return html
+}
+
+html {       // 带接收者的 lambda 由此开始
+    body()   // 调用该接收者对象的一个方法
+}
+```
+为什么可以这样呢？
+
+```java
+html {
+ // ……
+}
+```
+html是一个函数调用，它接受一个lambda表达式为参数，如下：
+
+```java
+fun html(init: HTML.() -> Unit): HTML {
+    val html = HTML()
+    html.init()
+    return html
+}
+```
+这个函数接受一个名为 init 的参数，该参数本身就是一个函数。 该函数的类型是 HTML.() -> Unit，它是一个 带接收者的函数类型 。 这意味着我们需要向函数传递一个 HTML 类型的实例（ 接收者 ）， 并且我们可以在函数内部调用该实例的成员。 该接收者可以通过 this 关键字访问：
+
+```java
+html {
+    this.head { …… }
+    this.body { …… }
+}
+```
+省略this
+
+```java
+html {
+    head { …… }
+    body { …… }
+}
+```
+完整示例可见于Kotlin官方文档。
+
+#### 函数扩展
+之前使用Go开发的时候，着实羡慕了一把，不过现在Kotlin也可以了，话不多说
+
+```java
+fun <T> MutableList<T>.swap(index1: Int, index2: Int) {
+    val tmp = this[index1] // “this”对应该列表
+    this[index1] = this[index2]
+    this[index2] = tmp
+}
+```
+这个功能这个在平时使用得也是比较多的。其本质不是真正的修改所扩展的类，而是静态的解析的，类似静态的方法，那以下的case就要注意了。
+
+```java
+open class C
+
+class D: C()
+
+fun C.foo() = "c"
+
+fun D.foo() = "d"
+
+fun printFoo(c: C) {
+    println(c.foo())
+}
+printFoo(D())  // 这里是c
+```
+再来一个知乎的例子，更全面
+
+```java
+operator inline fun Int.rem(blk: () -> Unit) {
+  if (Random (System.currentTimeMillis()).nextInt(100) < this) blk()
+}
+// 开始调用
+20 % { print ("你有20%的概率看到这条信息") }
+```
+
+#### 中缀表示法
+
+infix关键字，标识中缀函数：
+
+- 它们必须是成员函数或扩展函数；
+- 它们必须只有一个参数；
+- 其参数不得接受可变数量的参数且不能有默认值。
+
+```java
+infix fun Int.shl(x: Int): Int { …… }
+
+// 用中缀表示法调用该函数
+1 shl 2
+
+// 等同于这样
+1.shl(2)
+```
+
+#### 可变数量的参数（Varargs）
+函数的参数（通常是最后一个）可以用 vararg 修饰符标记，这里也可以用伸展（spread）操作符（在数组前面加 *）：
+
+```java
+fun <T> asList(vararg ts: T): List<T> {
+    val result = ArrayList<T>()
+    for (t in ts) // ts is an Array
+        result.add(t)
+    return result
+}
+// 如果要传一个数组
+val a = arrayOf(1, 2, 3)
+val list = asList(-1, 0, *a, 4)
+```
+
+#### use函数
+实现了Closeable接口的对象可调用use函数，自动close。不举例了。
+
+#### with、let、also、run and apply
+用一张图和一段代码说明：
+
+![](1_pLNnrvgvmG6Mdi0Yw3mdPQ.png)
+
+代码如下：
+
+```java
+// 代码转载自简书
+class Resp<T> {
+    var code: Int = 0
+    var body: T? = null
+    var errorMessage: String? = null
+
+    fun isSuccess(): Boolean = code == 200
+
+    override fun toString(): String {
+        return "Resp(code=$code, body=$body, errorMessage=$errorMessage)"
+    }
+}
+fun main(args: Array<String>) {
+    var resp: Resp<String>? = Resp()
+    if (resp != null) {
+        if (resp.isSuccess()) {
+            // do success
+            println(resp.body)
+        } else {
+            println(resp.errorMessage)
+        }
+    }
+
+    resp?.run {
+        if (isSuccess()) {
+            // do success
+            println(resp.body)
+        } else {
+            println(resp.errorMessage)
+        }
+    }
+
+    resp?.apply {
+        if (isSuccess()) {
+            // do success
+            println(resp.body)
+        } else {
+            println(resp.errorMessage)
+        }
+    }
+
+    resp?.let {
+        if (it.isSuccess()) {
+            // do success
+            println(it.body)
+        } else {
+            println(it.errorMessage)
+        }
+    }
+
+    resp?.also {
+        if (it.isSuccess()) {
+            // do success
+            println(it.body)
+        } else {
+            println(it.errorMessage)
+        }
+    }
+}
+```
+
+#### typealias
+
+```java
+typealias Cache = HasmMap<String, Int>
+```
+
+
+#### Java调用Kotlin属性
+
+```java
+// kotlin
+var a: Int = 1
+
+// java
+someone.setA(2)
+someone.getA() // 2
+```
+
+#### Java调用Kotlin方法
+
+```java
+// Counter.kt
+fun count() = 42
+
+// Java class
+int size = CounterKt.count()
+```
+CounterKt？不优雅
+
+```java
+// Counter.kt
+@file:JvmName("Counter")
+fun count() = 42
+
+// Java class
+int size = Counter.count()
+```
+
+#### Java调用Kotlin静态方法
+
+```java
+// Kotlin
+companion object {
+	fun count() = 42
+}
+
+// Java class
+int size = Counter.Companion.count()
+```
+不够优雅~
+
+```java
+// Kotlin
+companion object {
+	@JvmStatic
+	fun count() = 42
+}
+
+// Java class
+int size = Counter.count()
+```
+#### Java调用Kotlin构造函数
+
+```java
+// Kotlin
+class Person(val fullName: String, val nickName: String? = null)
+// Java
+Person person = new Person("Lorenzo");  // error
+
+// Kotlin
+class Person @JvmOverloads constructor (
+	val fullName: String,
+	val nickName: String? = null
+)
+// Java
+Person person = new Person("Lorenzo");  // ok
+```
+
