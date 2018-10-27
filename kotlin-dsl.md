@@ -102,7 +102,7 @@ html {
 
 首先我们回顾一些kotlin技术：
 
-###lambda与高阶函数
+### lambda与高阶函数
 
 Kotlin 的 lambda 有个规约：如果 lambda 表达式是函数的最后一个实参，则可以放在括号外面，并且可以省略括号，这个规约是 Kotlin DSL 实现嵌套结构的本质原因。
 
