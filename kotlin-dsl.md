@@ -106,9 +106,9 @@ html {
 
 Kotlin 的 lambda 有个规约：如果 lambda 表达式是函数的最后一个实参，则可以放在括号外面，并且可以省略括号，这个规约是 Kotlin DSL 实现嵌套结构的本质原因。
 
-传递lambda表达式作为参数：```fun html(init: HTML.() -> Unit): HTML``，这个方法接收一个有receiver的lambda表达式，因为这样在block的内部就可以直接访问receiver的公共成员了，这一点也很重要。
+传递lambda表达式作为参数：`fun html(init: HTML.() -> Unit): HTML`，这个方法接收一个有receiver的lambda表达式，因为这样在block的内部就可以直接访问receiver的公共成员了，这一点也很重要。
 
-###扩展函数（扩展属性）
+### 扩展函数（扩展属性）
 
 对于同样作为静态语言的 Kotlin 来说，扩展函数（扩展属性）是让他拥有类似于动态语言能力的法宝，即我们可以为任意对象动态的增加函数或属性。
 
