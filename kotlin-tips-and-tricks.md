@@ -251,7 +251,7 @@ A.(B) -> C
 
 ```java
 val sum = fun Int.(other: Int): Int = this + other
-println(sum(5 + 6))  // 11
+println(sum(5, 6))  // 11
 ```
 是不是还没有透彻，来一个完整的，很强大，可以尽情玩耍。
 
